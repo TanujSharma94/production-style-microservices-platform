@@ -2,9 +2,19 @@ const errorMiddleware = (err, req, res, next) => {
   console.error(err);
 
   if (err.code === 11000) {
+    const duplicateField = Object.keys(err.keyPattern || {})[0];
+
+    let message = "Duplicate value already exists";
+
+    if (duplicateField === "email") {
+      message = "Email already exists";
+    } else if (duplicateField === "name") {
+      message = "Category name already exists";
+    }
+
     return res.status(409).json({
       success: false,
-      message: "Email already exists"
+      message
     });
   }
 

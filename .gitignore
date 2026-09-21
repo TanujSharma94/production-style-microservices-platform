@@ -43,3 +43,6 @@ temp/
 
 # Local development
 *.local
+
+# Local backups and DB dumps
+backups/
