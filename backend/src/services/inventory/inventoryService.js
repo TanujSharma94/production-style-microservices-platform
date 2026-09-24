@@ -1,6 +1,6 @@
 const Inventory = require("../../models/Inventory");
 
-const reserveInventory = async (productId, quantity) => {
+const reserveInventory = async (productId, quantity, session = null) => {
   if (!Number.isInteger(quantity) || quantity <= 0) {
     throw new Error("Quantity must be a positive integer");
   }
@@ -17,7 +17,8 @@ const reserveInventory = async (productId, quantity) => {
       }
     },
     {
-      new: true
+      new: true,
+      session
     }
   );
 
@@ -28,7 +29,7 @@ const reserveInventory = async (productId, quantity) => {
   return inventory;
 };
 
-const releaseInventory = async (productId, quantity) => {
+const releaseInventory = async (productId, quantity, session = null) => {
   if (!Number.isInteger(quantity) || quantity <= 0) {
     throw new Error("Quantity must be a positive integer");
   }
@@ -45,7 +46,8 @@ const releaseInventory = async (productId, quantity) => {
       }
     },
     {
-      new: true
+      new: true,
+      session
     }
   );
 
@@ -56,7 +58,7 @@ const releaseInventory = async (productId, quantity) => {
   return inventory;
 };
 
-const sellInventory = async (productId, quantity) => {
+const sellInventory = async (productId, quantity, session = null) => {
   if (!Number.isInteger(quantity) || quantity <= 0) {
     throw new Error("Quantity must be a positive integer");
   }
@@ -73,7 +75,8 @@ const sellInventory = async (productId, quantity) => {
       }
     },
     {
-      new: true
+      new: true,
+      session
     }
   );
 
@@ -84,7 +87,7 @@ const sellInventory = async (productId, quantity) => {
   return inventory;
 };
 
-const restockInventory = async (productId, quantity) => {
+const restockInventory = async (productId, quantity, session = null) => {
   if (!Number.isInteger(quantity) || quantity <= 0) {
     throw new Error("Quantity must be a positive integer");
   }
@@ -99,7 +102,8 @@ const restockInventory = async (productId, quantity) => {
       }
     },
     {
-      new: true
+      new: true,
+      session
     }
   );
 

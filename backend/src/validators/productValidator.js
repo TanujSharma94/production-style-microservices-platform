@@ -18,8 +18,8 @@ const createProductValidator = [
   body("price")
     .notEmpty()
     .withMessage("Product price is required")
-    .isFloat({ min: 0 })
-    .withMessage("Product price must be a non-negative number"),
+    .isInt({ min: 0 })
+    .withMessage("Product price must be a non-negative integer (price is stored in paise, the minor currency unit)"),
 
   body("category")
     .trim()
@@ -55,8 +55,8 @@ const updateProductValidator = [
 
   body("price")
     .optional()
-    .isFloat({ min: 0 })
-    .withMessage("Product price must be a non-negative number"),
+    .isInt({ min: 0 })
+    .withMessage("Product price must be a non-negative integer (price is stored in paise, the minor currency unit)"),
 
   body("category")
     .optional()
