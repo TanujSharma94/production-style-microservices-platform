@@ -11,6 +11,8 @@ const {
 } = require("../validators/userValidator");
 
 const validationMiddleware = require("../middleware/validationMiddleware");
+const authMiddleware = require("../middleware/auth/authMiddleware");
+const roleMiddleware = require("../middleware/auth/roleMiddleware");
 
 const router = express.Router();
 
@@ -21,8 +23,8 @@ router.post(
   createUser
 );
 
-router.get("/", getUsers);
+router.get("/", authMiddleware, roleMiddleware("admin"), getUsers);
 
-router.get("/:id", getUserById);
+router.get("/:id", authMiddleware, roleMiddleware("admin"), getUserById);
 
 module.exports = router;
