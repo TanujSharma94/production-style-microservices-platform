@@ -33,6 +33,14 @@ export async function apiRequest(path, { method = "GET", body, token } = {}) {
     json = null;
   }
 
+  if (response.status === 401 && token) {
+    try {
+      localStorage.removeItem("auth");
+    } catch {}
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- api.js is outside the React tree, no router available here
+    if (typeof window !== "undefined") window.location.href = "/login";
+  }
+
   if (!response.ok || !json?.success) {
     throw new ApiError(
       json?.message || "Something went wrong",
