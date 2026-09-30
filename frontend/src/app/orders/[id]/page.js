@@ -26,23 +26,29 @@ export default function OrderDetailPage() {
     if (ready && !user) router.push("/login");
   }, [ready, user, router]);
 
+  function loadOrder() {
+    return apiRequest(`/api/orders/${id}`, { token })
+      .then((res) => setOrder(res.data))
+      .catch((err) => setError(err.message));
+  }
+
   useEffect(() => {
     if (!token) return;
-    apiRequest(`/api/orders/${id}`, { token })
-      .then((res) => setOrder(res.data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loading must flip synchronously when id/token changes to refetch
+    setLoading(true);
+    loadOrder().finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, token]);
 
   async function handleCancel() {
     setCancelling(true);
     setError("");
     try {
-      const res = await apiRequest(`/api/orders/${id}/cancel`, {
+      await apiRequest(`/api/orders/${id}/cancel`, {
         method: "PATCH",
         token,
       });
-      setOrder(res.data);
+      await loadOrder();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -85,10 +91,13 @@ export default function OrderDetailPage() {
           Payment: {order.paymentStatus}
         </p>
         <div className="mt-4 space-y-2 border-t pt-4">
-          {order.items.map((item) => (
-            <div key={item.product._id} className="flex justify-between text-sm">
+          {order.items.map((item, idx) => (
+            <div
+              key={item.product?._id ?? `order-item-${idx}`}
+              className="flex justify-between text-sm"
+            >
               <span>
-                {item.product.name} × {item.quantity}
+                {item.product?.name ?? "Product"} × {item.quantity}
               </span>
               <span>{formatPrice(item.priceAtOrder * item.quantity)}</span>
             </div>
