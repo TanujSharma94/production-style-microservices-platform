@@ -22,7 +22,6 @@ const createProduct = async (req, res, next) => {
     }
 
     let product;
-    // let inventory;	  
 
     await session.withTransaction(async () => {
       const createdProducts = await Product.create(
@@ -39,7 +38,7 @@ const createProduct = async (req, res, next) => {
 
       product = createdProducts[0];
 
-      const createdInventories = await Inventory.create(
+      await Inventory.create(
         [
           {
             product: product._id,
@@ -51,10 +50,7 @@ const createProduct = async (req, res, next) => {
         ],
         { session }
       );
-
-      // inventory = createdInventories[0];
-    });	    
-	    
+    });
 
     res.status(201).json({
       success: true,
@@ -65,16 +61,40 @@ const createProduct = async (req, res, next) => {
     next(error);
   } finally {
     await session.endSession();
-  }	  
+  }
 };
 
 const getProducts = async (req, res, next) => {
   try {
-    const products = await Product.find({
-      isActive: true
-    })
+    const { category, search, sort } = req.query;
+
+    const filter = { isActive: true };
+
+    if (category) {
+      if (!mongoose.Types.ObjectId.isValid(category)) {
+        return res.status(200).json({
+          success: true,
+          count: 0,
+          data: []
+        });
+      }
+      filter.category = category;
+    }
+
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } }
+      ];
+    }
+
+    let sortOption = { createdAt: -1 };
+    if (sort === "price_asc") sortOption = { price: 1 };
+    else if (sort === "price_desc") sortOption = { price: -1 };
+
+    const products = await Product.find(filter)
       .populate("category", "name")
-      .sort({ createdAt: -1 })
+      .sort(sortOption)
       .lean();
 
     const productIds = products.map((product) => product._id);
