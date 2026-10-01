@@ -2,15 +2,14 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="mt-8 bg-gray-900 text-gray-300">
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:grid-cols-3">
+    <footer className="mt-12 bg-gray-900 text-gray-300">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-3">
         <div>
-          <p className="flex items-center gap-2 text-lg font-bold text-white">
+          <p className="flex items-center gap-2 text-xl font-bold text-white">
             <span>🛍️</span> ShopHub
           </p>
-          <p className="mt-2 text-sm text-gray-400">
-            A production-style e-commerce platform built with Node.js, MongoDB
-            and Next.js.
+          <p className="mt-2 max-w-xs text-sm text-gray-400">
+            Everything you love, delivered with a smile.
           </p>
         </div>
         <div>
@@ -36,11 +35,16 @@ export default function Footer() {
                 Sign up
               </Link>
             </li>
+            <li>
+              <Link href="/orders" className="hover:text-white">
+                My orders
+              </Link>
+            </li>
           </ul>
         </div>
       </div>
       <div className="border-t border-gray-800 py-3 text-center text-xs text-gray-500">
-        © {new Date().getFullYear()} ShopHub
+        © {new Date().getFullYear()} ShopHub. All rights reserved.
       </div>
     </footer>
   );
