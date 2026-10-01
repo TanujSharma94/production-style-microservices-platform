@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api";
 import ProductCard from "@/components/ProductCard";
+import ProductFilters from "@/components/ProductFilters";
 
 const PERKS = [
   { icon: "🚚", title: "Fast delivery", text: "Quick dispatch on every order" },
@@ -14,18 +15,42 @@ const PAGE_SIZE = 12;
 
 export default function Home() {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [attempt, setAttempt] = useState(0);
   const [page, setPage] = useState(1);
+
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [sort, setSort] = useState("newest");
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 400);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  useEffect(() => {
+    apiRequest("/api/categories")
+      .then((res) => setCategories(res.data))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
-    apiRequest("/api/products")
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loading/error must flip synchronously when filters change to refetch
+    setLoading(true);
+    setError("");
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    if (category) params.set("category", category);
+    if (sort) params.set("sort", sort);
+
+    apiRequest(`/api/products?${params.toString()}`)
       .then((res) => {
         if (cancelled) return;
         setProducts(res.data);
-        setError("");
+        setPage(1);
       })
       .catch((err) => {
         if (!cancelled) setError(err.message);
@@ -36,13 +61,7 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [attempt]);
-
-  function retry() {
-    setLoading(true);
-    setError("");
-    setAttempt((a) => a + 1);
-  }
+  }, [debouncedSearch, category, sort]);
 
   const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
   const pageItems = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -92,10 +111,20 @@ export default function Home() {
       <section id="products" className="scroll-mt-20">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold">Featured products</h2>
-          {!loading && !error && products.length > 0 && (
+          {!loading && !error && (
             <p className="text-sm text-gray-500">{products.length} products</p>
           )}
         </div>
+
+        <ProductFilters
+          categories={categories}
+          search={search}
+          onSearchChange={setSearch}
+          category={category}
+          onCategoryChange={setCategory}
+          sort={sort}
+          onSortChange={setSort}
+        />
 
         {loading && (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -108,17 +137,13 @@ export default function Home() {
         {!loading && error && (
           <div className="py-10 text-center">
             <p className="mb-3 text-red-600">{error}</p>
-            <button
-              onClick={retry}
-              className="rounded-full bg-indigo-600 px-5 py-2 text-white hover:bg-indigo-500"
-            >
-              Try again
-            </button>
           </div>
         )}
 
         {!loading && !error && products.length === 0 && (
-          <p className="py-10 text-center text-gray-500">No products available.</p>
+          <p className="py-10 text-center text-gray-500">
+            No products match your filters.
+          </p>
         )}
 
         {!loading && !error && products.length > 0 && (
