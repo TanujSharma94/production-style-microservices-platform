@@ -21,7 +21,7 @@ const createCategory = async (req, res, next) => {
 
 const getCategories = async (req, res, next) => {
   try {
-    const categories = await Category.find()
+    const categories = await Category.find({ isActive: true })
       .sort({ createdAt: -1 });
 
     res.status(200).json({
