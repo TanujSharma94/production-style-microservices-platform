@@ -1,6 +1,14 @@
 const express = require("express");
 
-const { checkoutOrder, getOrderById, getMyOrders, cancelOrder, markOrderPaid } = require("../controllers/orderController");
+const {
+  checkoutOrder,
+  getOrderById,
+  getMyOrders,
+  getAllOrdersAdmin,
+  cancelOrder,
+  markOrderPaid
+} = require("../controllers/orderController");
+
 const authMiddleware = require("../middleware/auth/authMiddleware");
 const roleMiddleware = require("../middleware/auth/roleMiddleware");
 
@@ -9,6 +17,14 @@ const router = express.Router();
 router.post("/checkout", authMiddleware, checkoutOrder);
 
 router.get("/", authMiddleware, getMyOrders);
+
+router.get(
+  "/admin/all",
+  authMiddleware,
+  roleMiddleware("admin"),
+  getAllOrdersAdmin
+);
+
 router.get("/:id", authMiddleware, getOrderById);
 
 router.patch("/:id/cancel", authMiddleware, cancelOrder);

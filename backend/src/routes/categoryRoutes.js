@@ -3,9 +3,11 @@ const express = require("express");
 const {
   createCategory,
   getCategories,
+  getAllCategoriesAdmin,
   getCategoryById,
   updateCategory,
-  deactivateCategory
+  deactivateCategory,
+  activateCategory
 } = require("../controllers/categoryController");
 
 const {
@@ -30,6 +32,13 @@ router.post(
 
 router.get("/", getCategories);
 
+router.get(
+  "/admin/all",
+  authMiddleware,
+  roleMiddleware("admin"),
+  getAllCategoriesAdmin
+);
+
 router.get("/:id", getCategoryById);
 
 router.put(
@@ -46,6 +55,13 @@ router.patch(
   authMiddleware,
   roleMiddleware("admin"),
   deactivateCategory
+);
+
+router.patch(
+  "/:id/activate",
+  authMiddleware,
+  roleMiddleware("admin"),
+  activateCategory
 );
 
 module.exports = router;
