@@ -34,6 +34,20 @@ const getCategories = async (req, res, next) => {
   }
 };
 
+const getAllCategoriesAdmin = async (req, res, next) => {
+  try {
+    const categories = await Category.find({}).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: categories.length,
+      data: categories
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getCategoryById = async (req, res, next) => {
   try {
     const category = await Category.findById(req.params.id);
@@ -116,10 +130,41 @@ const deactivateCategory = async (req, res, next) => {
   }
 };
 
+const activateCategory = async (req, res, next) => {
+  try {
+    const category = await Category.findByIdAndUpdate(
+      req.params.id,
+      {
+        isActive: true
+      },
+      {
+        new: true
+      }
+    );
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Category activated successfully",
+      data: category
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createCategory,
   getCategories,
+  getAllCategoriesAdmin,
   getCategoryById,
   updateCategory,
-  deactivateCategory
+  deactivateCategory,
+  activateCategory
 };

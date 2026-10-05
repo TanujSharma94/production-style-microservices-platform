@@ -25,6 +25,12 @@ export default function AdminLayout({ children }) {
         <Link href="/admin/products" className="hover:text-indigo-700">
           Products
         </Link>
+        <Link href="/admin/categories" className="hover:text-indigo-700">
+          Categories
+        </Link>
+        <Link href="/admin/orders" className="hover:text-indigo-700">
+          Orders
+        </Link>
       </div>
       {children}
     </div>

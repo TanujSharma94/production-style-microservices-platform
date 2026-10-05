@@ -20,16 +20,11 @@ const checkoutOrder = async (req, res, next) => {
     }
 
     let order;
-    const reservedItems = [];
 
     try {
       await session.withTransaction(async () => {
         for (const item of cart.items) {
           await reserveInventory(item.product, item.quantity, session);
-          reservedItems.push({
-            product: item.product,
-            quantity: item.quantity
-          });
         }
 
         const totalAmount = cart.items.reduce(
@@ -70,17 +65,17 @@ const checkoutOrder = async (req, res, next) => {
       message: "Order created successfully",
       data: order
     });
-    } catch (error) {
-      if (error.message === "Insufficient inventory") {
-        return res.status(409).json({
-          success: false,
-          message: "Insufficient inventory for one or more items in your cart"
-        });
-      }
-      next(error);
-    } finally {
-      await session.endSession();
+  } catch (error) {
+    if (error.message === "Insufficient inventory") {
+      return res.status(409).json({
+        success: false,
+        message: "Insufficient inventory for one or more items in your cart"
+      });
     }
+    next(error);
+  } finally {
+    await session.endSession();
+  }
 };
 
 const getOrderById = async (req, res, next) => {
@@ -117,6 +112,23 @@ const getMyOrders = async (req, res, next) => {
     const orders = await Order.find({ user: userId })
       .sort({ createdAt: -1 })
       .populate("items.product", "name isActive");
+
+    return res.status(200).json({
+      success: true,
+      message: "Orders fetched successfully",
+      data: orders
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getAllOrdersAdmin = async (req, res, next) => {
+  try {
+    const orders = await Order.find({})
+      .sort({ createdAt: -1 })
+      .populate("items.product", "name isActive")
+      .populate("user", "name email");
 
     return res.status(200).json({
       success: true,
@@ -227,6 +239,7 @@ module.exports = {
   checkoutOrder,
   getOrderById,
   getMyOrders,
+  getAllOrdersAdmin,
   cancelOrder,
   markOrderPaid
 };
