@@ -19,6 +19,11 @@ export default function Header() {
           <Link href="/" className="rounded px-2 py-1 hover:bg-white/15">
             Products
           </Link>
+          {ready && user?.role === "admin" && (
+            <Link href="/admin/products" className="rounded px-2 py-1 hover:bg-white/15">
+              Admin
+            </Link>
+          )}
           {ready && user && (
             <>
               <Link href="/orders" className="rounded px-2 py-1 hover:bg-white/15">
