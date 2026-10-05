@@ -3,9 +3,11 @@ const express = require("express");
 const {
   createProduct,
   getProducts,
+  getAllProductsAdmin,
   getProductById,
   updateProduct,
-  deactivateProduct
+  deactivateProduct,
+  activateProduct
 } = require("../controllers/productController");
 
 const {
@@ -23,13 +25,20 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware("admin"),	
+  roleMiddleware("admin"),
   createProductValidator,
   validationMiddleware,
   createProduct
 );
 
 router.get("/", getProducts);
+
+router.get(
+  "/admin/all",
+  authMiddleware,
+  roleMiddleware("admin"),
+  getAllProductsAdmin
+);
 
 router.get("/:id", getProductById);
 
@@ -47,6 +56,13 @@ router.patch(
   authMiddleware,
   roleMiddleware("admin"),
   deactivateProduct
+);
+
+router.patch(
+  "/:id/activate",
+  authMiddleware,
+  roleMiddleware("admin"),
+  activateProduct
 );
 
 module.exports = router;

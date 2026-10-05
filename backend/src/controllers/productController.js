@@ -64,6 +64,28 @@ const createProduct = async (req, res, next) => {
   }
 };
 
+async function attachStock(products) {
+  const productIds = products.map((product) => product._id);
+
+  const inventories = await Inventory.find({
+    product: { $in: productIds }
+  })
+    .select("product availableQuantity reservedQuantity soldQuantity")
+    .lean();
+
+  const inventoryMap = new Map(
+    inventories.map((inventory) => [String(inventory.product), inventory])
+  );
+
+  return products.map((product) => {
+    const inventory = inventoryMap.get(String(product._id));
+    return {
+      ...product,
+      stock: inventory ? inventory.availableQuantity : 0
+    };
+  });
+}
+
 const getProducts = async (req, res, next) => {
   try {
     const { category, search, sort } = req.query;
@@ -97,29 +119,26 @@ const getProducts = async (req, res, next) => {
       .sort(sortOption)
       .lean();
 
-    const productIds = products.map((product) => product._id);
+    const data = await attachStock(products);
 
-    const inventories = await Inventory.find({
-      product: { $in: productIds }
-    })
-      .select("product availableQuantity reservedQuantity soldQuantity")
+    res.status(200).json({
+      success: true,
+      count: data.length,
+      data
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getAllProductsAdmin = async (req, res, next) => {
+  try {
+    const products = await Product.find({})
+      .populate("category", "name")
+      .sort({ createdAt: -1 })
       .lean();
 
-    const inventoryMap = new Map(
-      inventories.map((inventory) => [
-        String(inventory.product),
-        inventory
-      ])
-    );
-
-    const data = products.map((product) => {
-      const inventory = inventoryMap.get(String(product._id));
-
-      return {
-        ...product,
-        stock: inventory ? inventory.availableQuantity : 0
-      };
-    });
+    const data = await attachStock(products);
 
     res.status(200).json({
       success: true,
@@ -245,10 +264,41 @@ const deactivateProduct = async (req, res, next) => {
   }
 };
 
+const activateProduct = async (req, res, next) => {
+  try {
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        isActive: true
+      },
+      {
+        new: true
+      }
+    ).populate("category", "name");
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Product activated successfully",
+      data: product
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createProduct,
   getProducts,
+  getAllProductsAdmin,
   getProductById,
   updateProduct,
-  deactivateProduct
+  deactivateProduct,
+  activateProduct
 };
