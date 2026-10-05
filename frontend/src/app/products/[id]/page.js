@@ -8,6 +8,7 @@ import { formatPrice } from "@/lib/format";
 import StockLabel from "@/components/StockLabel";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import ReviewList from "@/components/ReviewList";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -94,6 +95,8 @@ export default function ProductDetailPage() {
           {adding ? "Adding..." : product.stock <= 0 ? "Out of stock" : "Add to cart"}
         </button>
         {cartMsg && <p className="mt-2 text-sm text-gray-600">{cartMsg}</p>}
+
+        <ReviewList productId={product._id} />
       </div>
     </div>
   );
