@@ -44,7 +44,7 @@ frontend:
 nginx:
   image:
     repository: ecommerce-nginx
-    tag: "1.0.0"
+    tag: "1.0.1"
   replicas: 1
   resources:
     requests:
@@ -52,6 +52,14 @@ nginx:
       memory: 32Mi
     limits:
       memory: 128Mi
+
+# Edge routing: Ingress -> nginx (gateway) -> frontend / backend
+ingress:
+  enabled: true
+  className: nginx
+  host: ""            # empty = match any host (works with localhost)
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "2m"
 
 # Never commit a real value here. Pass it at install time:
 #   --set secrets.jwtSecret="..."
