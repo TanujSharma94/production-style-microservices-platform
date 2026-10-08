@@ -1,0 +1,67 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: ecommerce-alerts
+  namespace: monitoring
+  labels:
+    app: ecommerce
+spec:
+  groups:
+    - name: ecommerce.rules
+      rules:
+        - alert: EcommerceBackendDown
+          expr: kube_deployment_status_replicas_available{namespace="ecommerce",deployment="backend"} < 1
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Backend has no available replicas"
+            description: "No backend pod has been available for 2 minutes."
+        - alert: EcommerceFrontendDown
+          expr: kube_deployment_status_replicas_available{namespace="ecommerce",deployment="frontend"} < 1
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Frontend has no available replicas"
+            description: "No frontend pod has been available for 2 minutes."
+        - alert: EcommerceNginxDown
+          expr: kube_deployment_status_replicas_available{namespace="ecommerce",deployment="nginx"} < 1
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "NGINX gateway has no available replicas"
+            description: "The NGINX gateway pod has been unavailable for 2 minutes."
+        - alert: EcommerceMongoDown
+          expr: kube_statefulset_status_replicas_ready{namespace="ecommerce",statefulset="mongo"} < 1
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "MongoDB is not ready"
+            description: "The mongo StatefulSet has had no ready replica for 2 minutes."
+        - alert: EcommercePodRestartingOften
+          expr: increase(kube_pod_container_status_restarts_total{namespace="ecommerce"}[15m]) > 3
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.pod }} is restarting often"
+            description: "Container {{ $labels.container }} restarted more than 3 times in 15 minutes."
+        - alert: EcommerceHigh5xxRate
+          expr: (sum(rate(nginx_ingress_controller_requests{status=~"5.."}[5m])) / sum(rate(nginx_ingress_controller_requests[5m]))) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "More than 5% of requests return 5xx"
+            description: "The 5xx ratio at the ingress has been above 5% for 5 minutes."
+        - alert: EcommerceHighMemoryUsage
+          expr: (sum by (pod, container) (container_memory_working_set_bytes{namespace="ecommerce",container!="",container!="POD"}) / sum by (pod, container) (kube_pod_container_resource_limits{namespace="ecommerce",resource="memory"})) > 0.9
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.pod }} is using over 90% of its memory limit"
+            description: "Container {{ $labels.container }} in pod {{ $labels.pod }} is close to being OOM-killed."
