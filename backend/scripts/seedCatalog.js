@@ -1,3 +1,8 @@
+if (!process.env.SEED_ADMIN_PASSWORD) {
+  console.error("SEED_ADMIN_PASSWORD is not set. Example: SEED_ADMIN_PASSWORD='...' node scripts/seedCatalog.js");
+  process.exit(1);
+}
+
 const BASE_URL = process.env.API_URL || "http://localhost:5000";
 
 const CATEGORIES = [
@@ -102,7 +107,7 @@ async function login() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       email: "admintest@example.com",
-      password: "AdminTest@2026",
+      password: process.env.SEED_ADMIN_PASSWORD,
     }),
   });
   const json = await res.json();
