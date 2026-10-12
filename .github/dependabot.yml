@@ -19,7 +19,10 @@ updates:
       react:
         patterns:
           - "react"
-          - "react-dom"  
+          - "react-dom"
+    ignore:
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "docker"
     directory: "/backend"
     schedule:
